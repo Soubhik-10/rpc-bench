@@ -8,6 +8,7 @@ Targets:
   make engine-status    - Show Kurtosis engine status
   make mainnet-up       - Launch persistent Reth mainnet RPC enclave
   make fuzz-up          - Launch private Reth fuzz/stress enclave
+  make build-compare-images - Build branch-specific local Reth Docker images
   make compare-up       - Launch 3 local Reth images plus 1 standard Reth node
   make inspect-mainnet  - Show mainnet enclave services and mapped ports
   make inspect-fuzz     - Show fuzz enclave services and mapped ports

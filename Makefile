@@ -18,7 +18,7 @@ ENDPOINTS ?= bench/rpc-endpoints.json
 
 .DEFAULT_GOAL := help
 
-.PHONY: help version engine-start engine-status mainnet-up fuzz-up compare-up inspect-mainnet inspect-fuzz inspect-compare probe bench bench-dynamic compare bench-smoke clean-mainnet clean-fuzz clean-compare
+.PHONY: help version engine-start engine-status mainnet-up fuzz-up build-compare-images compare-up inspect-mainnet inspect-fuzz inspect-compare probe bench bench-dynamic compare bench-smoke clean-mainnet clean-fuzz clean-compare
 
 help:
 	@RPC_URL='$(RPC_URL)' DURATION='$(DURATION)' CONCURRENCY='$(CONCURRENCY)' DISCOVERY_BLOCKS='$(DISCOVERY_BLOCKS)' CALLS='$(CALLS)' ENDPOINTS='$(ENDPOINTS)' REPORT_DIR='$(REPORT_DIR)' sh bench/help.sh
@@ -37,6 +37,9 @@ mainnet-up:
 
 fuzz-up:
 	@kurtosis run --enclave $(ENCLAVE_FUZZ) $(ETH_PACKAGE) --args-file kurtosis/reth-fuzz-stress-devnet.yaml --image-download always
+
+build-compare-images:
+	@sh scripts/build_reth_compare_images.sh
 
 compare-up:
 	@kurtosis run --enclave $(ENCLAVE_COMPARE) $(ETH_PACKAGE) --args-file kurtosis/reth-compare-local-vs-standard.yaml --image-download always

@@ -1,15 +1,15 @@
 {
   "endpoints": [
     {
-      "name": "local-a",
+      "name": "debug-trace-release-inspector",
       "url": "http://127.0.0.1:<el-1-rpc-port>"
     },
     {
-      "name": "local-b",
+      "name": "nethermind-11755-trace-streaming",
       "url": "http://127.0.0.1:<el-2-rpc-port>"
     },
     {
-      "name": "local-c",
+      "name": "ethpandaops-reth",
       "url": "http://127.0.0.1:<el-3-rpc-port>"
     },
     {

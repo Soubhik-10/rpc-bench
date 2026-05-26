@@ -88,14 +88,27 @@ Useful targets:
 Every benchmark run writes a JSON report and an HTML report with simple charts
 under `reports/` by default. Override with `REPORT_DIR=/path/to/reports`.
 
-## Compare Local Reth Images Against Standard Reth
+## Compare Branch Builds Against Standard Reth
 
-Build or tag three local Reth Docker images:
+Build three local Reth Docker images:
 
 ```sh
-docker build -t reth-local-a:latest <path-to-reth>
-docker tag reth-local-a:latest reth-local-b:latest
-docker tag reth-local-a:latest reth-local-c:latest
+make build-compare-images
+```
+
+Defaults:
+
+| Endpoint | Repo | Branch | Image |
+| --- | --- | --- | --- |
+| `debug-trace-release-inspector` | `https://github.com/paradigmxyz/reth-oss.git` | `debug-trace-release-inspector` | `reth-debug-trace-release-inspector:latest` |
+| `nethermind-11755-trace-streaming` | `https://github.com/paradigmxyz/reth-oss.git` | `port/nethermind-11755-trace-streaming` | `reth-nethermind-11755-trace-streaming:latest` |
+| `ethpandaops-reth` | `https://github.com/ethpandaops/reth-oss.git` | `main` | `reth-ethpandaops:latest` |
+| `standard` | ethereum-package default | package default | blank `el_image` |
+
+Override any build input with environment variables:
+
+```sh
+REPO_C=https://github.com/ethpandaops/reth-oss.git BRANCH_C=<ethpandaops-branch> IMAGE_C=reth-ethpandaops:latest make build-compare-images
 ```
 
 Launch the four-node private comparison network:
@@ -105,9 +118,9 @@ make compare-up
 make inspect-compare
 ```
 
-The first three EL nodes use `reth-local-a:latest`, `reth-local-b:latest`, and
-`reth-local-c:latest`. The fourth node leaves `el_image` blank, so
-ethereum-package uses its standard/default Reth image.
+The first three EL nodes use the branch-specific local images. The fourth node
+leaves `el_image` blank, so ethereum-package uses its standard/default Reth
+image.
 
 Copy `bench/rpc-endpoints.example.json` to `bench/rpc-endpoints.json`, then fill
 in the mapped `rpc` ports from `make inspect-compare`:
@@ -115,9 +128,9 @@ in the mapped `rpc` ports from `make inspect-compare`:
 ```json
 {
   "endpoints": [
-    { "name": "local-a", "url": "http://127.0.0.1:<el-1-rpc-port>" },
-    { "name": "local-b", "url": "http://127.0.0.1:<el-2-rpc-port>" },
-    { "name": "local-c", "url": "http://127.0.0.1:<el-3-rpc-port>" },
+    { "name": "debug-trace-release-inspector", "url": "http://127.0.0.1:<el-1-rpc-port>" },
+    { "name": "nethermind-11755-trace-streaming", "url": "http://127.0.0.1:<el-2-rpc-port>" },
+    { "name": "ethpandaops-reth", "url": "http://127.0.0.1:<el-3-rpc-port>" },
     { "name": "standard", "url": "http://127.0.0.1:<el-4-rpc-port>" }
   ]
 }
