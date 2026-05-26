@@ -1,0 +1,20 @@
+{
+  "endpoints": [
+    {
+      "name": "local-a",
+      "url": "http://127.0.0.1:<el-1-rpc-port>"
+    },
+    {
+      "name": "local-b",
+      "url": "http://127.0.0.1:<el-2-rpc-port>"
+    },
+    {
+      "name": "local-c",
+      "url": "http://127.0.0.1:<el-3-rpc-port>"
+    },
+    {
+      "name": "standard",
+      "url": "http://127.0.0.1:<el-4-rpc-port>"
+    }
+  ]
+}

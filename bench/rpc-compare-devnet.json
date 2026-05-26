@@ -1,0 +1,70 @@
+{
+  "name": "reth-local-vs-standard-correctness",
+  "durationSeconds": 120,
+  "timeoutMs": 15000,
+  "blockSampleSize": 24,
+  "requests": [
+    {
+      "name": "eth_chainId",
+      "weight": 4,
+      "method": "eth_chainId",
+      "params": []
+    },
+    {
+      "name": "eth_blockNumber",
+      "weight": 4,
+      "method": "eth_blockNumber",
+      "params": [],
+      "compare": false
+    },
+    {
+      "name": "eth_getBlockByNumber_common_header",
+      "weight": 18,
+      "method": "eth_getBlockByNumber",
+      "params": ["{{randomCommonBlock}}", false]
+    },
+    {
+      "name": "eth_getBlockByNumber_common_full",
+      "weight": 8,
+      "method": "eth_getBlockByNumber",
+      "params": ["{{randomCommonBlock}}", true]
+    },
+    {
+      "name": "eth_getTransactionByHash_sampled",
+      "weight": 12,
+      "method": "eth_getTransactionByHash",
+      "params": ["{{randomTxHash}}"]
+    },
+    {
+      "name": "eth_getTransactionReceipt_sampled",
+      "weight": 12,
+      "method": "eth_getTransactionReceipt",
+      "params": ["{{randomTxHash}}"]
+    },
+    {
+      "name": "eth_getBalance_prefunded_common",
+      "weight": 12,
+      "method": "eth_getBalance",
+      "params": ["0x4242424242424242424242424242424242424242", "{{randomCommonBlock}}"]
+    },
+    {
+      "name": "eth_getCode_empty_common",
+      "weight": 8,
+      "method": "eth_getCode",
+      "params": ["0x4242424242424242424242424242424242424242", "{{randomCommonBlock}}"]
+    },
+    {
+      "name": "eth_feeHistory_common",
+      "weight": 8,
+      "method": "eth_feeHistory",
+      "params": ["0x5", "{{commonBlock}}", [10, 50, 90]]
+    },
+    {
+      "name": "txpool_status",
+      "weight": 4,
+      "method": "txpool_status",
+      "params": [],
+      "compare": false
+    }
+  ]
+}

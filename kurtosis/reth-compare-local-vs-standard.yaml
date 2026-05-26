@@ -1,0 +1,89 @@
+# Four-node private Reth comparison network.
+#
+# Three participants use local Docker image tags. The fourth leaves el_image
+# empty, so ethereum-package uses its standard/default Reth image.
+#
+# Build or tag your local images before launching, for example:
+#   docker build -t reth-local-a:latest .
+#   docker tag reth-local-a:latest reth-local-b:latest
+#   docker tag reth-local-a:latest reth-local-c:latest
+#
+# Run:
+#   kurtosis run --enclave reth-compare github.com/ethpandaops/ethereum-package --args-file kurtosis/reth-compare-local-vs-standard.yaml --image-download always
+#
+# Then:
+#   kurtosis enclave inspect reth-compare
+#
+# Copy each EL service's mapped rpc port into bench/rpc-endpoints.example.json.
+participants:
+  - el_type: reth
+    el_image: "reth-local-a:latest"
+    cl_type: lighthouse
+    count: 1
+    el_storage_type: full
+    el_extra_params:
+      - "--cache=4096"
+    cl_extra_params:
+      - "--metrics"
+      - "--metrics-address=0.0.0.0"
+
+  - el_type: reth
+    el_image: "reth-local-b:latest"
+    cl_type: lighthouse
+    count: 1
+    el_storage_type: full
+    el_extra_params:
+      - "--cache=4096"
+    cl_extra_params:
+      - "--metrics"
+      - "--metrics-address=0.0.0.0"
+
+  - el_type: reth
+    el_image: "reth-local-c:latest"
+    cl_type: lighthouse
+    count: 1
+    el_storage_type: full
+    el_extra_params:
+      - "--cache=4096"
+    cl_extra_params:
+      - "--metrics"
+      - "--metrics-address=0.0.0.0"
+
+  - el_type: reth
+    # Blank el_image means the ethereum-package standard/default Reth image.
+    el_image: ""
+    cl_type: lighthouse
+    count: 1
+    el_storage_type: full
+    el_extra_params:
+      - "--cache=4096"
+    cl_extra_params:
+      - "--metrics"
+      - "--metrics-address=0.0.0.0"
+
+network_params:
+  network: kurtosis
+  seconds_per_slot: 12
+  num_validator_keys_per_node: 64
+  preregistered_validator_keys_mnemonic: "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+
+additional_services:
+  - prometheus
+  - grafana
+  - dora
+  - assertoor
+
+assertoor_params:
+  image: "ethpandaops/assertoor:latest"
+  run_stability_check: true
+  run_block_proposal_check: true
+  run_transaction_test: true
+  run_blob_transaction_test: true
+  tests: []
+
+prometheus_params:
+  storage_tsdb_retention_time: "1d"
+  storage_tsdb_retention_size: "2GB"
+
+persistent: true
+snooper_enabled: true

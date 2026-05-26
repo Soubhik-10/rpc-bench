@@ -15,13 +15,13 @@ enclave.
 
 ## Start the Reth Mainnet RPC Node
 
-```powershell
+```sh
 kurtosis run --enclave reth-mainnet-rpc github.com/ethpandaops/ethereum-package --args-file kurtosis/reth-mainnet-rpc.yaml --image-download always
 ```
 
 Then inspect the enclave and copy the mapped `rpc` URL for `el-1-reth-lighthouse`:
 
-```powershell
+```sh
 kurtosis enclave inspect reth-mainnet-rpc
 ```
 
@@ -32,7 +32,7 @@ The RPC URL will look like `http://127.0.0.1:<mapped-port>`.
 Use this when you want transaction fuzzing, generated load, stability checks,
 and noisy mempool/block production behavior without touching real mainnet:
 
-```powershell
+```sh
 kurtosis run --enclave reth-fuzz-stress github.com/ethpandaops/ethereum-package --args-file kurtosis/reth-fuzz-stress-devnet.yaml --image-download always
 ```
 
@@ -44,29 +44,29 @@ historical mainnet state, but much better for fuzzing writes and stress traffic.
 
 Update `bench/rpc-mainnet-like.json` or override the URL at runtime:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File bench/Invoke-RpcBench.ps1 -RpcUrl http://127.0.0.1:<mapped-port>
+```sh
+RPC_URL=http://127.0.0.1:<mapped-port> sh bench/rpc_bench.sh
 ```
 
 Useful overrides:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File bench/Invoke-RpcBench.ps1 -RpcUrl http://127.0.0.1:<mapped-port> -DurationSeconds 300 -Concurrency 64
+```sh
+RPC_URL=http://127.0.0.1:<mapped-port> DURATION=300 CONCURRENCY=64 sh bench/rpc_bench.sh
 ```
 
 There is also a dynamic workload that discovers the latest block, samples recent
 blocks for real transaction hashes, and then mixes block, tx, receipt, log,
 fee-history, call, txpool, and trace requests:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File bench/Invoke-RpcBench.ps1 -Config bench/rpc-dynamic-mainnet.json -RpcUrl http://127.0.0.1:<mapped-port>
+```sh
+CONFIG=bench/rpc-dynamic-mainnet.json RPC_URL=http://127.0.0.1:<mapped-port> sh bench/rpc_bench.sh
 ```
 
 ## Make Targets
 
 The Makefile wraps the common flow:
 
-```powershell
+```sh
 make engine-start
 make mainnet-up
 make inspect-mainnet
@@ -78,6 +78,51 @@ Useful targets:
 
 `make probe`, `make bench`, `make bench-dynamic`, `make fuzz-up`, `make inspect-fuzz`,
 `make engine-status`, `make clean-mainnet`, `make clean-fuzz`.
+
+## Compare Local Reth Images Against Standard Reth
+
+Build or tag three local Reth Docker images:
+
+```sh
+docker build -t reth-local-a:latest <path-to-reth>
+docker tag reth-local-a:latest reth-local-b:latest
+docker tag reth-local-a:latest reth-local-c:latest
+```
+
+Launch the four-node private comparison network:
+
+```sh
+make compare-up
+make inspect-compare
+```
+
+The first three EL nodes use `reth-local-a:latest`, `reth-local-b:latest`, and
+`reth-local-c:latest`. The fourth node leaves `el_image` blank, so
+ethereum-package uses its standard/default Reth image.
+
+Copy `bench/rpc-endpoints.example.json` to `bench/rpc-endpoints.json`, then fill
+in the mapped `rpc` ports from `make inspect-compare`:
+
+```json
+{
+  "endpoints": [
+    { "name": "local-a", "url": "http://127.0.0.1:<el-1-rpc-port>" },
+    { "name": "local-b", "url": "http://127.0.0.1:<el-2-rpc-port>" },
+    { "name": "local-c", "url": "http://127.0.0.1:<el-3-rpc-port>" },
+    { "name": "standard", "url": "http://127.0.0.1:<el-4-rpc-port>" }
+  ]
+}
+```
+
+Run the correctness and latency comparison:
+
+```sh
+make compare DURATION=300 DISCOVERY_BLOCKS=32
+```
+
+The comparator finds the common safe block across all endpoints, samples recent
+transactions from the baseline endpoint, sends identical RPC calls to every
+endpoint, measures latency, and exits non-zero if comparable responses differ.
 
 ## Mainnet-Like Notes
 
