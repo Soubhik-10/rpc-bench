@@ -19,4 +19,5 @@ Targets:
   make bench-smoke      - One-second local failure-path smoke test
 
 Overrides: RPC_URL=${RPC_URL:-http://127.0.0.1:8545} DURATION=${DURATION:-120} CONCURRENCY=${CONCURRENCY:-32} DISCOVERY_BLOCKS=${DISCOVERY_BLOCKS:-32} ENDPOINTS=${ENDPOINTS:-bench/rpc-endpoints.json}
+Reports:   CALLS=${CALLS:-duration-limited} REPORT_DIR=${REPORT_DIR:-reports}
 EOF

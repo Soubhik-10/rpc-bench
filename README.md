@@ -1,7 +1,7 @@
 # Reth Mainnet-Like RPC Bench
 
-This workspace contains a Kurtosis config for a persistent Reth mainnet RPC node
-and a small PowerShell JSON-RPC benchmark runner.
+This workspace contains Kurtosis configs for Reth RPC benchmarking and Bash
+runners for latency, correctness, and HTML report generation.
 
 ## Install / Verify Kurtosis
 
@@ -54,6 +54,12 @@ Useful overrides:
 RPC_URL=http://127.0.0.1:<mapped-port> DURATION=300 CONCURRENCY=64 sh bench/rpc_bench.sh
 ```
 
+You can cap by total calls instead of only time:
+
+```sh
+RPC_URL=http://127.0.0.1:<mapped-port> DURATION=300 CONCURRENCY=64 CALLS=10000 sh bench/rpc_bench.sh
+```
+
 There is also a dynamic workload that discovers the latest block, samples recent
 blocks for real transaction hashes, and then mixes block, tx, receipt, log,
 fee-history, call, txpool, and trace requests:
@@ -71,13 +77,16 @@ make engine-start
 make mainnet-up
 make inspect-mainnet
 make probe RPC_URL=http://127.0.0.1:<mapped-port>
-make bench-dynamic RPC_URL=http://127.0.0.1:<mapped-port> DURATION=300 CONCURRENCY=64
+make bench-dynamic RPC_URL=http://127.0.0.1:<mapped-port> DURATION=300 CONCURRENCY=64 DISCOVERY_BLOCKS=64 CALLS=10000
 ```
 
 Useful targets:
 
 `make probe`, `make bench`, `make bench-dynamic`, `make fuzz-up`, `make inspect-fuzz`,
 `make engine-status`, `make clean-mainnet`, `make clean-fuzz`.
+
+Every benchmark run writes a JSON report and an HTML report with simple charts
+under `reports/` by default. Override with `REPORT_DIR=/path/to/reports`.
 
 ## Compare Local Reth Images Against Standard Reth
 
@@ -117,12 +126,14 @@ in the mapped `rpc` ports from `make inspect-compare`:
 Run the correctness and latency comparison:
 
 ```sh
-make compare DURATION=300 DISCOVERY_BLOCKS=32
+make compare DURATION=300 DISCOVERY_BLOCKS=32 CALLS=5000
 ```
 
 The comparator finds the common safe block across all endpoints, samples recent
 transactions from the baseline endpoint, sends identical RPC calls to every
 endpoint, measures latency, and exits non-zero if comparable responses differ.
+The HTML report includes detected CPU/memory/Docker metadata, endpoint latency
+charts, per-request latency tables, and the first mismatch samples.
 
 ## Mainnet-Like Notes
 
