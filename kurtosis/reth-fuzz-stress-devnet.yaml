@@ -1,0 +1,84 @@
+# Private Reth network for fuzzing/stress, not real mainnet.
+#
+# Run:
+#   kurtosis run --enclave reth-fuzz-stress github.com/ethpandaops/ethereum-package --args-file kurtosis/reth-fuzz-stress-devnet.yaml --image-download always
+#
+# This is where tx fuzzing belongs: the network has funded dev accounts, fast
+# finality, and no risk of accidentally broadcasting mainnet transactions.
+participants:
+  - el_type: reth
+    cl_type: lighthouse
+    count: 2
+    el_storage_type: full
+    el_extra_params:
+      - "--cache=4096"
+      - "--max-outbound-peers=100"
+      - "--max-inbound-peers=30"
+    cl_extra_params:
+      - "--metrics"
+      - "--metrics-address=0.0.0.0"
+
+network_params:
+  network: kurtosis
+  seconds_per_slot: 12
+  num_validator_keys_per_node: 64
+  preregistered_validator_keys_mnemonic: "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+
+additional_services:
+  - prometheus
+  - grafana
+  - tx_fuzz
+  - spamoor
+  - assertoor
+  - dora
+
+tx_fuzz_params:
+  image: "ethpandaops/tx-fuzz:master"
+  tx_fuzz_extra_args: []
+
+spamoor_params:
+  image: "ethpandaops/spamoor:latest"
+  max_cpu: 2000
+  max_mem: 1024
+  spammers:
+    - name: "EOA transfer load"
+      description: "Mainnet-ish type-2 account transfer pressure"
+      scenario: eoatx
+      config:
+        throughput: 200
+        max_pending: 400
+        max_wallets: 200
+        base_fee: 20
+    - name: "Contract deployment/call load"
+      description: "Mixed execution pressure for RPC and mempool behavior"
+      scenario: erctx
+      config:
+        throughput: 25
+        max_pending: 100
+        max_wallets: 50
+        base_fee: 20
+    - name: "Blob load"
+      description: "Post-Dencun blob transaction pressure"
+      scenario: blob-combined
+      config:
+        throughput: 3
+        sidecars: 2
+        max_pending: 6
+        max_wallets: 20
+        blob_fee: 20
+  extra_args: []
+
+assertoor_params:
+  image: "ethpandaops/assertoor:latest"
+  run_stability_check: true
+  run_block_proposal_check: true
+  run_transaction_test: true
+  run_blob_transaction_test: true
+  tests: []
+
+prometheus_params:
+  storage_tsdb_retention_time: "1d"
+  storage_tsdb_retention_size: "2GB"
+
+persistent: true
+snooper_enabled: true

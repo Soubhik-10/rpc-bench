@@ -1,0 +1,43 @@
+# Mainnet-like Reth RPC benchmark target.
+#
+# This uses ethpandaops/ethereum-package to run a real Ethereum mainnet Reth
+# execution client paired with Lighthouse. It is intentionally persistent,
+# because mainnet sync/state is large and expensive to recreate.
+#
+# Run:
+#   kurtosis run --enclave reth-mainnet-rpc github.com/ethpandaops/ethereum-package --args-file kurtosis/reth-mainnet-rpc.yaml --image-download always
+#
+# After startup, find the RPC URL:
+#   kurtosis enclave inspect reth-mainnet-rpc
+#
+# Look for the `el-1-reth-lighthouse` service and its `rpc` port.
+participants:
+  - el_type: reth
+    cl_type: lighthouse
+    count: 1
+    checkpoint_sync_enabled: true
+    # Reth defaults to archive in ethereum-package. Full mode is still real
+    # mainnet state at the head, but is much more feasible for RPC latency work.
+    # Remove this line if you explicitly need historical/archive RPC coverage.
+    el_storage_type: full
+    el_extra_params:
+      - "--cache=8192"
+      - "--max-outbound-peers=100"
+      - "--max-inbound-peers=30"
+    cl_extra_params:
+      - "--metrics"
+      - "--metrics-address=0.0.0.0"
+
+network_params:
+  network: mainnet
+
+additional_services:
+  - prometheus
+  - grafana
+
+prometheus_params:
+  storage_tsdb_retention_time: "3d"
+  storage_tsdb_retention_size: "4GB"
+
+persistent: true
+snooper_enabled: false

@@ -1,0 +1,98 @@
+{
+  "name": "reth-mainnet-like",
+  "rpcUrl": "http://127.0.0.1:8545",
+  "durationSeconds": 120,
+  "concurrency": 32,
+  "timeoutMs": 15000,
+  "requests": [
+    {
+      "name": "eth_blockNumber",
+      "weight": 20,
+      "method": "eth_blockNumber",
+      "params": []
+    },
+    {
+      "name": "eth_getBlockByNumber_latest_header",
+      "weight": 16,
+      "method": "eth_getBlockByNumber",
+      "params": ["latest", false]
+    },
+    {
+      "name": "eth_getBlockByNumber_finalized_full",
+      "weight": 4,
+      "method": "eth_getBlockByNumber",
+      "params": ["finalized", true]
+    },
+    {
+      "name": "eth_getBalance_beacon_deposit",
+      "weight": 12,
+      "method": "eth_getBalance",
+      "params": ["0x00000000219ab540356cBB839Cbe05303d7705Fa", "latest"]
+    },
+    {
+      "name": "eth_getTransactionCount_vitalik",
+      "weight": 8,
+      "method": "eth_getTransactionCount",
+      "params": ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", "latest"]
+    },
+    {
+      "name": "eth_call_weth_totalSupply",
+      "weight": 12,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "data": "0x18160ddd"
+        },
+        "latest"
+      ]
+    },
+    {
+      "name": "eth_getCode_weth",
+      "weight": 8,
+      "method": "eth_getCode",
+      "params": ["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "latest"]
+    },
+    {
+      "name": "eth_feeHistory_20_blocks",
+      "weight": 8,
+      "method": "eth_feeHistory",
+      "params": ["0x14", "latest", [10, 50, 90]]
+    },
+    {
+      "name": "eth_getLogs_usdc_recent",
+      "weight": 4,
+      "method": "eth_getLogs",
+      "params": [
+        {
+          "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "fromBlock": "latest",
+          "toBlock": "latest",
+          "topics": ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]
+        }
+      ]
+    },
+    {
+      "name": "txpool_status",
+      "weight": 4,
+      "method": "txpool_status",
+      "params": []
+    },
+    {
+      "name": "debug_traceCall_weth_totalSupply",
+      "weight": 2,
+      "method": "debug_traceCall",
+      "params": [
+        {
+          "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "data": "0x18160ddd"
+        },
+        "latest",
+        {
+          "tracer": "callTracer",
+          "timeout": "5s"
+        }
+      ]
+    }
+  ]
+}

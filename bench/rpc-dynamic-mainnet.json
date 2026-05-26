@@ -1,0 +1,102 @@
+{
+  "name": "reth-dynamic-mainnet-like",
+  "rpcUrl": "http://127.0.0.1:8545",
+  "durationSeconds": 120,
+  "concurrency": 32,
+  "timeoutMs": 15000,
+  "dynamic": {
+    "enabled": true,
+    "blockSampleSize": 32
+  },
+  "requests": [
+    {
+      "name": "eth_blockNumber",
+      "weight": 18,
+      "method": "eth_blockNumber",
+      "params": []
+    },
+    {
+      "name": "eth_getBlockByNumber_random_recent_header",
+      "weight": 16,
+      "method": "eth_getBlockByNumber",
+      "params": ["{{randomRecentBlock}}", false]
+    },
+    {
+      "name": "eth_getBlockByNumber_random_recent_full",
+      "weight": 6,
+      "method": "eth_getBlockByNumber",
+      "params": ["{{randomRecentBlock}}", true]
+    },
+    {
+      "name": "eth_getTransactionByHash_sampled",
+      "weight": 12,
+      "method": "eth_getTransactionByHash",
+      "params": ["{{randomTxHash}}"]
+    },
+    {
+      "name": "eth_getTransactionReceipt_sampled",
+      "weight": 10,
+      "method": "eth_getTransactionReceipt",
+      "params": ["{{randomTxHash}}"]
+    },
+    {
+      "name": "eth_getBalance_beacon_deposit_random_recent",
+      "weight": 10,
+      "method": "eth_getBalance",
+      "params": ["0x00000000219ab540356cBB839Cbe05303d7705Fa", "{{randomRecentBlock}}"]
+    },
+    {
+      "name": "eth_call_weth_totalSupply_random_recent",
+      "weight": 10,
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "data": "0x18160ddd"
+        },
+        "{{randomRecentBlock}}"
+      ]
+    },
+    {
+      "name": "eth_feeHistory_recent",
+      "weight": 8,
+      "method": "eth_feeHistory",
+      "params": ["0x14", "{{safeLatestBlock}}", [10, 50, 90]]
+    },
+    {
+      "name": "eth_getLogs_usdc_sample_window",
+      "weight": 4,
+      "method": "eth_getLogs",
+      "params": [
+        {
+          "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "fromBlock": "{{sampleFromBlock}}",
+          "toBlock": "{{safeLatestBlock}}",
+          "topics": ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]
+        }
+      ]
+    },
+    {
+      "name": "txpool_status",
+      "weight": 4,
+      "method": "txpool_status",
+      "params": []
+    },
+    {
+      "name": "debug_traceCall_weth_totalSupply_random_recent",
+      "weight": 2,
+      "method": "debug_traceCall",
+      "params": [
+        {
+          "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "data": "0x18160ddd"
+        },
+        "{{randomRecentBlock}}",
+        {
+          "tracer": "callTracer",
+          "timeout": "5s"
+        }
+      ]
+    }
+  ]
+}
