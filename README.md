@@ -90,7 +90,7 @@ under `reports/` by default. Override with `REPORT_DIR=/path/to/reports`.
 
 ## Compare Branch Builds Against Standard Reth
 
-Build three local Reth Docker images:
+Build two local Reth Docker images:
 
 ```sh
 make build-compare-images
@@ -102,14 +102,7 @@ Defaults:
 | --- | --- | --- | --- |
 | `debug-trace-release-inspector` | `https://github.com/paradigmxyz/reth-oss.git` | `debug-trace-release-inspector` | `reth-debug-trace-release-inspector:latest` |
 | `nethermind-11755-trace-streaming` | `https://github.com/paradigmxyz/reth-oss.git` | `port/nethermind-11755-trace-streaming` | `reth-nethermind-11755-trace-streaming:latest` |
-| `ethpandaops-reth` | `https://github.com/ethpandaops/reth-oss.git` | `main` | `reth-ethpandaops:latest` |
 | `standard` | ethereum-package default | package default | blank `el_image` |
-
-Override any build input with environment variables:
-
-```sh
-REPO_C=https://github.com/ethpandaops/reth-oss.git BRANCH_C=<ethpandaops-branch> IMAGE_C=reth-ethpandaops:latest make build-compare-images
-```
 
 Launch the four-node private comparison network:
 
@@ -118,7 +111,7 @@ make compare-up
 make inspect-compare
 ```
 
-The first three EL nodes use the branch-specific local images. The fourth node
+The first two EL nodes use the branch-specific local images. The final node
 leaves `el_image` blank, so ethereum-package uses its standard/default Reth
 image.
 
@@ -130,8 +123,7 @@ in the mapped `rpc` ports from `make inspect-compare`:
   "endpoints": [
     { "name": "debug-trace-release-inspector", "url": "http://127.0.0.1:<el-1-rpc-port>" },
     { "name": "nethermind-11755-trace-streaming", "url": "http://127.0.0.1:<el-2-rpc-port>" },
-    { "name": "ethpandaops-reth", "url": "http://127.0.0.1:<el-3-rpc-port>" },
-    { "name": "standard", "url": "http://127.0.0.1:<el-4-rpc-port>" }
+    { "name": "standard", "url": "http://127.0.0.1:<el-3-rpc-port>" }
   ]
 }
 ```
@@ -143,8 +135,9 @@ make compare DURATION=300 DISCOVERY_BLOCKS=32 CALLS=5000
 ```
 
 The comparator finds the common safe block across all endpoints, samples recent
-transactions from the baseline endpoint, sends identical RPC calls to every
-endpoint, measures latency, and exits non-zero if comparable responses differ.
+transactions from the baseline endpoint via RPC, derives `eth_*`, `debug_*`,
+and `trace_*` requests from those devnet transactions, sends identical RPC calls
+to every endpoint, measures latency, and exits non-zero if comparable responses differ.
 The HTML report includes detected CPU/memory/Docker metadata, endpoint latency
 charts, per-request latency tables, and the first mismatch samples.
 

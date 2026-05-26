@@ -72,6 +72,7 @@ common_block = max(0, min(item["block"] for item in heights) - 2)
 sample_size = max(1, int(bench.get("blockSampleSize", 24)))
 sample_from = max(0, common_block - sample_size + 1)
 tx_hashes = []
+tx_samples = []
 
 for block_number in range(sample_from, common_block + 1):
     ok, _, block, _ = rpc(endpoints[0]["url"], "eth_getBlockByNumber", [to_hex_quantity(block_number), True])
@@ -80,6 +81,30 @@ for block_number in range(sample_from, common_block + 1):
             tx_hash = tx.get("hash") if isinstance(tx, dict) else tx
             if tx_hash:
                 tx_hashes.append(tx_hash)
+            if isinstance(tx, dict) and tx_hash:
+                call = None
+                if tx.get("to"):
+                    call = {
+                        "from": tx.get("from"),
+                        "to": tx.get("to"),
+                        "gas": tx.get("gas"),
+                        "gasPrice": tx.get("gasPrice"),
+                        "value": tx.get("value", "0x0"),
+                        "data": tx.get("input", "0x"),
+                    }
+                    call = {key: value for key, value in call.items() if value is not None}
+                tx_samples.append({
+                    "hash": tx_hash,
+                    "from": tx.get("from"),
+                    "to": tx.get("to") or tx.get("from"),
+                    "blockNumber": tx.get("blockNumber") or to_hex_quantity(block_number),
+                    "blockHash": tx.get("blockHash") or block.get("hash"),
+                    "transactionIndex": tx.get("transactionIndex", "0x0"),
+                    "call": call,
+                })
+
+if not tx_samples:
+    raise SystemExit("No transactions were sampled from the devnet via RPC. Wait for the Kurtosis devnet to produce transactions, then rerun the compare bench.")
 
 context = {
     "commonBlock": common_block,
@@ -87,6 +112,7 @@ context = {
     "sampleFromBlock": sample_from,
     "sampleFromBlockHex": to_hex_quantity(sample_from),
     "txHashes": tx_hashes,
+    "txSamples": tx_samples,
 }
 
 print("Endpoint heights:")
@@ -94,24 +120,41 @@ for item in heights:
     print(f"  {item['name']:<12} {item['blockHex']}")
 print(f"Common compare block: {context['commonBlockHex']}")
 print(f"Sample range:         {context['sampleFromBlockHex']}..{context['commonBlockHex']}")
-print(f"Sampled txs:          {len(tx_hashes)}\n")
+print(f"Sampled txs:          {len(tx_samples)}\n")
 
 
-def resolve(value):
+def resolve(value, sample):
     if isinstance(value, str):
         if value == "{{commonBlock}}":
             return context["commonBlockHex"]
         if value == "{{sampleFromBlock}}":
             return context["sampleFromBlockHex"]
-        if value == "{{randomCommonBlock}}":
-            return to_hex_quantity(random.randint(context["sampleFromBlock"], context["commonBlock"]))
-        if value == "{{randomTxHash}}":
-            return random.choice(context["txHashes"]) if context["txHashes"] else "0x" + "0" * 64
+        if value == "{{sampledBlock}}":
+            return sample["blockNumber"]
+        if value == "{{sampledBlockHash}}":
+            return sample["blockHash"]
+        if value == "{{sampledTxHash}}":
+            return sample["hash"]
+        if value == "{{sampledTxIndex}}":
+            return sample["transactionIndex"]
+        if value == "{{sampledTxSender}}":
+            return sample["from"]
+        if value == "{{sampledTxTo}}":
+            return sample["to"]
+        if value == "{{sampledTxCall}}":
+            if not sample["call"]:
+                return {
+                    "from": sample["from"],
+                    "to": sample["to"],
+                    "data": "0x",
+                    "value": "0x0",
+                }
+            return sample["call"]
         return value
     if isinstance(value, list):
-        return [resolve(item) for item in value]
+        return [resolve(item, sample) for item in value]
     if isinstance(value, dict):
-        return {key: resolve(item) for key, item in value.items()}
+        return {key: resolve(item, sample) for key, item in value.items()}
     return value
 
 
@@ -130,7 +173,8 @@ while time.time() < deadline:
         break
     rounds += 1
     request = random.choice(weighted)
-    params = resolve(copy.deepcopy(request.get("params", [])))
+    sample = random.choice(context["txSamples"])
+    params = resolve(copy.deepcopy(request.get("params", [])), sample)
     responses = []
     for endpoint in endpoints:
         ok, latency, result, error = rpc(endpoint["url"], request["method"], params)

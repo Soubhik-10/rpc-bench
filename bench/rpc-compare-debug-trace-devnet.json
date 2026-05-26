@@ -1,0 +1,198 @@
+{
+  "name": "reth-debug-trace-devnet-coverage",
+  "durationSeconds": 120,
+  "timeoutMs": 20000,
+  "blockSampleSize": 32,
+  "requests": [
+    {
+      "name": "eth_chainId",
+      "weight": 3,
+      "method": "eth_chainId",
+      "params": []
+    },
+    {
+      "name": "eth_blockNumber",
+      "weight": 3,
+      "method": "eth_blockNumber",
+      "params": [],
+      "compare": false
+    },
+    {
+      "name": "eth_getBlockByHash_full",
+      "weight": 4,
+      "method": "eth_getBlockByHash",
+      "params": ["{{sampledBlockHash}}", true]
+    },
+    {
+      "name": "eth_getTransactionByHash_sampled",
+      "weight": 4,
+      "method": "eth_getTransactionByHash",
+      "params": ["{{sampledTxHash}}"]
+    },
+    {
+      "name": "eth_getTransactionReceipt_sampled",
+      "weight": 4,
+      "method": "eth_getTransactionReceipt",
+      "params": ["{{sampledTxHash}}"]
+    },
+    {
+      "name": "eth_call_sampled_tx",
+      "weight": 4,
+      "method": "eth_call",
+      "params": ["{{sampledTxCall}}", "{{sampledBlock}}"]
+    },
+    {
+      "name": "eth_estimateGas_sampled_tx",
+      "weight": 2,
+      "method": "eth_estimateGas",
+      "params": ["{{sampledTxCall}}", "{{sampledBlock}}"]
+    },
+    {
+      "name": "debug_traceCall_callTracer",
+      "weight": 4,
+      "method": "debug_traceCall",
+      "params": [
+        "{{sampledTxCall}}",
+        "{{sampledBlock}}",
+        {
+          "tracer": "callTracer",
+          "timeout": "10s"
+        }
+      ]
+    },
+    {
+      "name": "debug_traceCall_prestateTracer",
+      "weight": 3,
+      "method": "debug_traceCall",
+      "params": [
+        "{{sampledTxCall}}",
+        "{{sampledBlock}}",
+        {
+          "tracer": "prestateTracer",
+          "timeout": "10s"
+        }
+      ]
+    },
+    {
+      "name": "debug_traceTransaction_callTracer",
+      "weight": 5,
+      "method": "debug_traceTransaction",
+      "params": [
+        "{{sampledTxHash}}",
+        {
+          "tracer": "callTracer",
+          "timeout": "10s"
+        }
+      ]
+    },
+    {
+      "name": "debug_traceTransaction_prestateTracer",
+      "weight": 3,
+      "method": "debug_traceTransaction",
+      "params": [
+        "{{sampledTxHash}}",
+        {
+          "tracer": "prestateTracer",
+          "timeout": "10s"
+        }
+      ]
+    },
+    {
+      "name": "debug_traceBlockByNumber_callTracer",
+      "weight": 3,
+      "method": "debug_traceBlockByNumber",
+      "params": [
+        "{{sampledBlock}}",
+        {
+          "tracer": "callTracer",
+          "timeout": "10s"
+        }
+      ]
+    },
+    {
+      "name": "debug_traceBlockByHash_callTracer",
+      "weight": 3,
+      "method": "debug_traceBlockByHash",
+      "params": [
+        "{{sampledBlockHash}}",
+        {
+          "tracer": "callTracer",
+          "timeout": "10s"
+        }
+      ]
+    },
+    {
+      "name": "trace_call_trace",
+      "weight": 4,
+      "method": "trace_call",
+      "params": ["{{sampledTxCall}}", ["trace"], "{{sampledBlock}}"]
+    },
+    {
+      "name": "trace_call_trace_stateDiff_vmTrace",
+      "weight": 2,
+      "method": "trace_call",
+      "params": ["{{sampledTxCall}}", ["trace", "stateDiff", "vmTrace"], "{{sampledBlock}}"]
+    },
+    {
+      "name": "trace_callMany_trace",
+      "weight": 3,
+      "method": "trace_callMany",
+      "params": [
+        [
+          [
+            "{{sampledTxCall}}",
+            ["trace"]
+          ]
+        ],
+        "{{sampledBlock}}"
+      ]
+    },
+    {
+      "name": "trace_replayTransaction_trace",
+      "weight": 4,
+      "method": "trace_replayTransaction",
+      "params": ["{{sampledTxHash}}", ["trace"]]
+    },
+    {
+      "name": "trace_replayTransaction_all",
+      "weight": 2,
+      "method": "trace_replayTransaction",
+      "params": ["{{sampledTxHash}}", ["trace", "stateDiff", "vmTrace"]]
+    },
+    {
+      "name": "trace_replayBlockTransactions_trace",
+      "weight": 2,
+      "method": "trace_replayBlockTransactions",
+      "params": ["{{sampledBlock}}", ["trace"]]
+    },
+    {
+      "name": "trace_block",
+      "weight": 4,
+      "method": "trace_block",
+      "params": ["{{sampledBlock}}"]
+    },
+    {
+      "name": "trace_transaction",
+      "weight": 4,
+      "method": "trace_transaction",
+      "params": ["{{sampledTxHash}}"]
+    },
+    {
+      "name": "trace_get_root",
+      "weight": 2,
+      "method": "trace_get",
+      "params": ["{{sampledTxHash}}", []]
+    },
+    {
+      "name": "trace_filter_sample_window",
+      "weight": 2,
+      "method": "trace_filter",
+      "params": [
+        {
+          "fromBlock": "{{sampleFromBlock}}",
+          "toBlock": "{{commonBlock}}"
+        }
+      ]
+    }
+  ]
+}

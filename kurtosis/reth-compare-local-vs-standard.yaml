@@ -1,7 +1,7 @@
-# Four-node private Reth comparison network.
+# Three-node private Reth comparison network.
 #
-# Three participants use branch-specific Docker image tags. The fourth leaves
-# el_image empty, so ethereum-package uses its standard/default Reth image.
+# Two participants use branch-specific Docker image tags. The final participant
+# leaves el_image empty, so ethereum-package uses its standard/default Reth image.
 #
 # Build the branch images before launching:
 #   sh scripts/build_reth_compare_images.sh
@@ -20,11 +20,6 @@ participants:
     cl_type: lighthouse
     count: 1
     el_storage_type: full
-    el_extra_params:
-      - "--cache=4096"
-    cl_extra_params:
-      - "--metrics"
-      - "--metrics-address=0.0.0.0"
 
   - el_type: reth
     # paradigmxyz/reth-oss branch: port/nethermind-11755-trace-streaming
@@ -32,23 +27,6 @@ participants:
     cl_type: lighthouse
     count: 1
     el_storage_type: full
-    el_extra_params:
-      - "--cache=4096"
-    cl_extra_params:
-      - "--metrics"
-      - "--metrics-address=0.0.0.0"
-
-  - el_type: reth
-    # ethpandaops/reth-oss branch configured by scripts/build_reth_compare_images.sh
-    el_image: "reth-ethpandaops:latest"
-    cl_type: lighthouse
-    count: 1
-    el_storage_type: full
-    el_extra_params:
-      - "--cache=4096"
-    cl_extra_params:
-      - "--metrics"
-      - "--metrics-address=0.0.0.0"
 
   - el_type: reth
     # Blank el_image means the ethereum-package standard/default Reth image.
@@ -56,16 +34,13 @@ participants:
     cl_type: lighthouse
     count: 1
     el_storage_type: full
-    el_extra_params:
-      - "--cache=4096"
-    cl_extra_params:
-      - "--metrics"
-      - "--metrics-address=0.0.0.0"
 
 network_params:
   network: kurtosis
   seconds_per_slot: 12
   num_validator_keys_per_node: 64
+  # Keep this small comparison net away from PeerDAS/Fulu constraints.
+  fulu_fork_epoch: 18446744073709551615
   preregistered_validator_keys_mnemonic: "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
 
 additional_services:
@@ -73,6 +48,7 @@ additional_services:
   - grafana
   - dora
   - assertoor
+  - spamoor
 
 assertoor_params:
   image: "ethpandaops/assertoor:latest"
@@ -81,6 +57,29 @@ assertoor_params:
   run_transaction_test: true
   run_blob_transaction_test: true
   tests: []
+
+spamoor_params:
+  image: "ethpandaops/spamoor:latest"
+  max_cpu: 2000
+  max_mem: 1024
+  spammers:
+    - name: "EOA transfer load"
+      description: "Funded devnet account transfer traffic for RPC trace comparison"
+      scenario: eoatx
+      config:
+        throughput: 20
+        max_pending: 80
+        max_wallets: 40
+        base_fee: 20
+    - name: "Contract call load"
+      description: "Execution-heavy devnet traffic for debug/trace RPCs"
+      scenario: erctx
+      config:
+        throughput: 5
+        max_pending: 30
+        max_wallets: 20
+        base_fee: 20
+  extra_args: []
 
 prometheus_params:
   storage_tsdb_retention_time: "1d"

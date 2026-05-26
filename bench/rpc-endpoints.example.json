@@ -9,12 +9,8 @@
       "url": "http://127.0.0.1:<el-2-rpc-port>"
     },
     {
-      "name": "ethpandaops-reth",
-      "url": "http://127.0.0.1:<el-3-rpc-port>"
-    },
-    {
       "name": "standard",
-      "url": "http://127.0.0.1:<el-4-rpc-port>"
+      "url": "http://127.0.0.1:<el-3-rpc-port>"
     }
   ]
 }

@@ -21,43 +21,98 @@
       "name": "eth_getBlockByNumber_common_header",
       "weight": 18,
       "method": "eth_getBlockByNumber",
-      "params": ["{{randomCommonBlock}}", false]
+      "params": ["{{sampledBlock}}", false]
     },
     {
       "name": "eth_getBlockByNumber_common_full",
       "weight": 8,
       "method": "eth_getBlockByNumber",
-      "params": ["{{randomCommonBlock}}", true]
+      "params": ["{{sampledBlock}}", true]
     },
     {
       "name": "eth_getTransactionByHash_sampled",
       "weight": 12,
       "method": "eth_getTransactionByHash",
-      "params": ["{{randomTxHash}}"]
+      "params": ["{{sampledTxHash}}"]
     },
     {
       "name": "eth_getTransactionReceipt_sampled",
       "weight": 12,
       "method": "eth_getTransactionReceipt",
-      "params": ["{{randomTxHash}}"]
+      "params": ["{{sampledTxHash}}"]
     },
     {
-      "name": "eth_getBalance_prefunded_common",
+      "name": "eth_getBalance_sampled_sender",
       "weight": 12,
       "method": "eth_getBalance",
-      "params": ["0x4242424242424242424242424242424242424242", "{{randomCommonBlock}}"]
+      "params": ["{{sampledTxSender}}", "{{sampledBlock}}"]
     },
     {
-      "name": "eth_getCode_empty_common",
+      "name": "eth_getCode_sampled_to",
       "weight": 8,
       "method": "eth_getCode",
-      "params": ["0x4242424242424242424242424242424242424242", "{{randomCommonBlock}}"]
+      "params": ["{{sampledTxTo}}", "{{sampledBlock}}"]
+    },
+    {
+      "name": "eth_call_sampled_tx",
+      "weight": 8,
+      "method": "eth_call",
+      "params": [
+        "{{sampledTxCall}}",
+        "{{sampledBlock}}"
+      ]
     },
     {
       "name": "eth_feeHistory_common",
       "weight": 8,
       "method": "eth_feeHistory",
       "params": ["0x5", "{{commonBlock}}", [10, 50, 90]]
+    },
+    {
+      "name": "debug_traceTransaction_sampled",
+      "weight": 6,
+      "method": "debug_traceTransaction",
+      "params": [
+        "{{sampledTxHash}}",
+        {
+          "tracer": "callTracer",
+          "timeout": "10s"
+        }
+      ]
+    },
+    {
+      "name": "debug_traceBlockByNumber_common",
+      "weight": 2,
+      "method": "debug_traceBlockByNumber",
+      "params": [
+        "{{sampledBlock}}",
+        {
+          "tracer": "callTracer",
+          "timeout": "10s"
+        }
+      ]
+    },
+    {
+      "name": "trace_call_sampled_tx",
+      "weight": 6,
+      "method": "trace_call",
+      "params": [
+        "{{sampledTxCall}}",
+        ["trace"],
+        "{{sampledBlock}}"
+      ]
+    },
+    {
+      "name": "trace_replayTransaction_sampled",
+      "weight": 4,
+      "method": "trace_replayTransaction",
+      "params": ["{{sampledTxHash}}", ["trace"]]
+    },
+    {
+      "name": "trace_block_common",
+      "weight": 2,
+      "method": "trace_block",
+      "params": ["{{sampledBlock}}"]
     },
     {
       "name": "txpool_status",
